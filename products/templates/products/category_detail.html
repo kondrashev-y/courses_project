@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mt-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'base' %}">Главная</a></li>
+    <li class="breadcrumb-item active">{{ category.name }}</li>
+  </ol>
+</nav>
+
+<div class="row mt-4">
+  <div class="col">
+  <h2 class="text-center">{{ category }}</h2>
+  <center><img src="{{ category.image.url }}" alt=""></center>
+  <br>
+  <p2>{{ category.descriptions }}</p2>
+
+</div>
+  <div class="row">
+  {% for product in products %}
+  <div class="col-md-6 mb-6">
+    <div class="card h-200" style="width: 24rem;">
+      <div class="card-body">
+        <h2 class="card-title text-center">
+          {% if product.product_type == 'Course' %}Курс{% elif product.product_type == 'Sprint'%}Спринт{% endif %}
+        </h2>
+        <p class="card-text text-center">{{ product.description }}</p>
+        <h5 class="text-center">{{ product.price }} руб.</h5>
+        <center><a href="{% url 'add_to_cart' slug=product.slug %}">
+          <button class="btn btn-danger ">{% if product.product_type == 'Course' %}Начать курс {% elif product.product_type == 'Sprint'%} Начать спринт{% else %} В корзину{% endif %}</button>
+        </a></center>
+
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+    </div>
+</div>
+
+{% endblock content %}

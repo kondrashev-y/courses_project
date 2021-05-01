@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mt-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'base' %}">Главная</a></li>
+        <li class="breadcrumb-item active">Профиль</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-9">
+        <img src="{{ customer.user.image.url|default_if_none:'#' }}" align="right" alt="">
+        <h3 class="mt-3 mb-3">Профиль пользователя {{ customer.user.first_name }}</h3>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-9">
+        <h3 class="mt-3 mb-3">Мои курсы</h3>
+<!--        {% for order in orders %}-->
+<!--            {% for item in order.cart.products.all %}-->
+<!--                <a href="{{ item.product.get_absolute_url }}">-->
+<!--&lt;!&ndash;                <a href="{{ progress.get_absolute_url }}">&ndash;&gt;-->
+<!--                    <li>{{ item.product.title }}</li>-->
+<!--                </a>-->
+<!--            {% endfor %}-->
+<!--        {% endfor %}-->
+        {% for progress in customer_progress %}
+            <a href="{{ progress.get_absolute_url }}">
+                <li>{{ progress.product }} - Пройдено - {{ progress.passed }} %</li>
+            </a>
+        {% endfor %}
+
+
+        <h3 class="mt-3 mb-3">Заказы пользователя {{ customer.user.first_name }}</h3>
+        {% if not orders.count %}
+        <div class="col-md-12" style="margin-top: 300px; margin-bottom: 300px;">
+            <h3>У вас пока нет заказов. <a href="{% url 'base'%}">Выберите товары для заказа</a></h3>
+        </div>
+
+        {% else %}
+        <div class="col-md-12" style="margin-top: 100px; margin-bottom:450px;">
+            <table class="table">
+                <thead>
+                <th scope="col">Номер</th>
+                <th scope="col">Статус</th>
+                <th scope="col">Сумма</th>
+                <th scope="col">Товар</th>
+                <th scope="col">Дополнительно</th>
+                </thead>
+                <tbody>
+                {% for order in orders %}
+                <tr>
+                    <th scope="row">{{order.id}}</th>
+                    <td>{{order.get_status_display}}</td>
+                    <td>{{order.cart.final_price}} руб.</td>
+                    <td>
+                        <ul>
+                            {% for item in order.cart.products.all %}
+                                <li>{{ item.product.title }} x {{ item.qty}} шт.</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>
+                        <button class="btn btn-info" class="btn btn-primary" data-toggle="modal"
+                                data-target="#exampleModal-{{ order.id }}">Дополнительно
+                        </button>
+                        <div class="modal fade" id="exampleModal-{{ order.id }}" tabindex="-1"
+                             aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Детализация заказа</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <h4 class="text-center">Товар</h4>
+                                        <table class="table">
+                                            <thead>
+                                            <tr>
+                                                <th scope="col">Наименование</th>
+                                                <th scope="col">Изображение</th>
+                                                <th scope="col">Цена</th>
+                                                <th scope="col">Кол-во</th>
+                                                <th scope="col">Общая стоимость</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for item in order.cart.products.all %}
+                                            <tr>
+                                                <th scope="row">{{ item.product.title }}</th>
+                                                <td class="w-25"><img src="{{ item.product.image.url }}"
+                                                                      class="img-fluid"
+                                                                      alt=""></td>
+                                                <td><strong>{{ item.product.price }}</strong> руб.</td>
+                                                <td>{{ item.qty }}</td>
+                                                <td>{{ item.final_price }} руб.</td>
+                                            </tr>
+                                            {% endfor %}
+                                            <tr>
+                                                <td colspan="3"></td>
+                                                <td>Итого:</td>
+                                                <td><strong>{{ order.cart.final_price }}</strong> руб.</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        <hr>
+                                        <h4 class="text-center">Дополнительнеая информация</h4>
+                                        <p>Имя: <strong>{{ order.first_name }}</strong></p>
+                                        <p>Фамилия: <strong>{{ order.last_name }}</strong></p>
+                                        <p>Телефон: <strong>{{ customer.phone }}</strong></p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close
+                                        </button>
+                                        <button type="button" class="btn btn-primary">Save changes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% endif%}
+
+        {% endblock %}

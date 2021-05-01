@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load comments_tree %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+
+
+    <div class="row-mt-6">
+        <div class="col-sm">
+            <h2>{{ product }}</h2>
+            <center><img src="{{ product.category.image.url }}" alt="" height="150" align="right"></center>
+            <br>
+            <p2>{{ product.description }}</p2>
+        </div>
+    </div>
+
+
+    <div class="row mt-6">
+        <div class="col-md-6">
+            <h2>Прогресс</h2>
+            <a href="{{ progress.get_absolute_url }}" class="dropdown-item">{{progress.passed}}</a>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: {{progress.passed}}%;"
+                     aria-valuenow="{{progress.passed}}" aria-valuemin="0" aria-valuemax="100">{{progress.passed}}%
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row-mt-6 my-6">
+        <div class="col ">
+            <h2>Уроки</h2>
+
+
+            <br>
+            <div class="row mt-6">
+                <div class="col md-6">
+                    {% for check in checklessons %}
+                    <div class="accordion" id="accordion{{ check.lesson.slug }}">
+                        <div class="accordion-item">
+
+                            <h2 class="accordion-header" id="heading{{ check.lesson.slug }}">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#{{ check.lesson.slug }}" aria-expanded="true"
+                                        aria-controls="collapseOne">
+                                    {{ check.lesson.title }}
+                                    {% if check.finish %}
+                                    <span class="badge bg-success">Завершен</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Ожидает прохождения</span>
+                                    {% endif %}
+                                </button>
+                            </h2>
+
+                            <div id="{{ check.lesson.slug }}" class="accordion-collapse collapse"
+                                 aria-labelledby="heading{{ check.lesson.slug }}"
+                                 data-bs-parent="#accordion{{ check.lesson.slug }}">
+                                <div class="accordion-body">
+
+                                    <video
+                                            id="vid_{{check.lesson.pk|escapejs}}"
+                                            class="video-js vjs-big-play-centered"
+                                            preload="auto"
+                                            width="800"
+                                            height="450"
+                                            data-setup='{"controls":true,
+                                        "playbackRates": [0.25, 0.5, 1, 1.5, 2, 2.5]}'
+
+                                    >
+                                        <source src="{{ check.lesson.video.url }}" type="video/mp4"/>
+                                        <source src="{{ check.lesson.video.url }}" type="video/webm"/>
+                                        <p class="vjs-no-js">
+                                            To view this video please enable JavaScript, and consider upgrading to a
+                                            web browser that
+                                            <a href="https://videojs.com/html5-video-support/" target="_blank">supports
+                                                HTML5
+                                                video</a>
+                                        </p>
+                                    </video>
+
+                                    <br>
+
+                                    {{ check.lesson.descriptions }}
+
+                                </div>
+                            </div>
+                        </div>
+
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <br>
+                {% for check in checklessons %}
+                <li>
+                    <a href="{% url 'lesson_detail' slug=product.slug pk=check.lesson.id %}">{{ check.lesson.title
+                        }}</a>
+                    {% if check.finish %}
+                    <span class="badge bg-success">Завершен</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Ожидает прохождения</span>
+                    {% endif %}
+                </li>
+
+                {% endfor %}
+                <br>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col md-3">
+
+            </div>
+            <div class="col-md-6">
+                {{ comments|comments_filter }}
+                <hr>
+                <div class="col md-12">
+                    <form action="{% url 'add_comment' pk=progress.id %}" method="POST">
+                        {% csrf_token %}
+                        {{ comment_form|crispy }}
+                        <input type="submit" class="btn btn-primary" value="Отправить">
+                    </form>
+                </div>
+            </div>
+            <div class="col md-3">
+
+            </div>
+
+        </div>
+    </div>
+    {% endblock content %}
+
+    {% block extrascripts %}
+    {% for check in checklessons %}
+    <script>
+            videojs('vid_{{check.lesson.pk|escapejs}}').ready(function() {
+                this.hotkeys({
+                    volumeStep: 0.1,
+                    seekStep: 30,
+                    enableModifiersForNumbers: false
+                });
+            });
+
+
+
+
+    </script>
+    {% endfor %}
+
+    <script>
+    $(document).ready(function(){
+        $(".reply").on('click', function(){
+            var parentId = $(this).attr('data-id')
+            $("#form-"+parentId).fadeToggle();
+            console.log(parentId);
+        })
+
+        $(".submit-reply").on('click', function(e){
+            e.preventDefault()
+            var parentId = $(this).attr('data-submit-reply')
+            console.log(parentId);
+            var id = $(this).attr('data-id')
+            var text = $("#form-"+id).find('textarea[name="comment-text"]').val();
+                function getCookie(name) {
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        const cookies = document.cookie.split(';');
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i].trim();
+                            // Does this cookie string begin with the name we want?
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+                const csrftoken = getCookie('csrftoken');
+                data = {
+                    user: "{{ request.user.id }}",
+                    text: text,
+                    id: id,
+                    csrfmiddlewaretoken: csrftoken
+                }
+                $.ajax({
+                    method: "POST",
+                    data: data,
+                    url: "{% url 'comment_child_create' %}",
+                    success: function(data){
+                        window.location.href = "{{ progress.get_absolute_url }}"
+                    }
+                })
+        })
+    })
+
+
+    </script>
+    {% endblock %}

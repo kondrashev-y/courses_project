@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mt-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'base' %}">Главная</a></li>
+        <li class="breadcrumb-item "><a href="{% url 'profile' %}">Профиль</a></li>
+        <li class="breadcrumb-item "><a href="#">{{ product }}</a></li>
+        <li class="breadcrumb-item active">{{ lesson.title }}</li>
+    </ol>
+</nav>
+
+<div class="row mt-6">
+    <div class="col md-6">
+        <h2 class="text-center">{{ lesson.title }}</h2>
+        <br>
+        <p2>{{ lesson.video }}</p2>
+        <br>
+        <br>
+        <p2>{{ lesson.descriptions }}</p2>
+
+
+    <video
+    id="videoPlayer"
+    class="video-js vjs-big-play-centered"
+    preload="auto"
+    width="800"
+    height="450"
+    data-setup="{}"
+  >
+    <source src="{{ lesson.video.url }}" type="video/mp4" />
+    <source src="{{ lesson.video.url }}" type="video/webm" />
+    <p class="vjs-no-js">
+      To view this video please enable JavaScript, and consider upgrading to a
+      web browser that
+      <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+    </p>
+  </video>
+
+    </div>
+</div>
+<div class="row mt-6">
+    <div class="col md-6">
+        <br>
+        <h2>Уроки</h2>
+        {% for lesson in product.lessons.all %}
+        <li><a href="{% url 'lesson_detail' slug=product.slug pk=lesson.id %}">{{ lesson.title }}</a></li>
+        {% endfor %}
+        <br>
+    </div>
+</div>
+
+{% endblock content %}
